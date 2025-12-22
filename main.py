@@ -3,7 +3,8 @@ from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge, RisingEdge, Timer
 
 
-@cocotb.test(skip=True)
+# @cocotb.test(skip=True)
+@cocotb.test()
 async def console_elevator(dut):
     """Interactive console simulation for 4-floor elevator."""
 
@@ -118,19 +119,19 @@ async def automated_test(dut):
         dut.req.value = 1 << floor
         await RisingEdge(dut.clk)
         dut.req.value = 0
-        
+
         door_opened = False
         cycles = 0
         last_floor = current_floor
-        
+
         while cycles < max_cycles:
             await RisingEdge(dut.clk)
             cycles += 1
-            
+
             floor_val = int(dut.current_floor.value)
             door = int(dut.door.value)
             busy = int(dut.busy.value)
-            
+
             # Debug output (commented out for clean demo)
             # if cycles <= 20:
             #     try:
@@ -140,11 +141,11 @@ async def automated_test(dut):
             #         print(f"  [DBG] cycle {cycles}: floor={floor_val}, busy={busy}, door={door}, state={state}, pending={pending:04b}, dir={direction}")
             #     except:
             #         print(f"  [DBG] cycle {cycles}: floor={floor_val}, busy={busy}, door={door}")
-            
+
             if floor_val != last_floor:
                 print(f"  Moved to floor {floor_val}")
                 last_floor = floor_val
-            
+
             if door and floor_val == floor:
                 if not door_opened:
                     print(f"  ✓ Door opened at floor {floor} (cycles: {cycles})")
@@ -152,9 +153,11 @@ async def automated_test(dut):
             elif door_opened and not door:
                 print(f"  ✓ Door closed, service complete\n")
                 return True
-        
+
         final_floor = int(dut.current_floor.value)
-        print(f"  ✗ FAILED: Timeout waiting for floor {floor} (stuck at floor {final_floor})\n")
+        print(
+            f"  ✗ FAILED: Timeout waiting for floor {floor} (stuck at floor {final_floor})\n"
+        )
         return False
 
     # Test sequence
